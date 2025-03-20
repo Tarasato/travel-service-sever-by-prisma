@@ -77,7 +77,7 @@ exports.getAllTravel = async (req, res) => {
 //func get travel by travelId in travel_tb
 exports.getTravel = async (req, res) => {
   try {
-    const result = await prisma.travel_tb.findMany({
+    const result = await prisma.travel_tb.findFirst({
       where: {
         travelId: Number(req.params.travelId),
       },
