@@ -165,11 +165,9 @@ exports.deleteTraveller = async (req, res) => {
       },
     });
     if (traveller.travellerImage) {
-      const oldImagePath = "images/traveller/" + traveller.travellerImage;
-      //ลบไฟล์เก่าออก
-      fs.unlinkSync(oldImagePath, (err) => {
-        console.log(err);
-      });
+      //ค้นดูว่ามีรูปไหม ถ้ามีให้ลบรูปเก่าออก
+      const traveller = result.travellerImage.split("/").pop().split(".")[0]; // Extract public_id from URL
+        await Cloudinary.uploader.destroy(`images/traveller/${traveller}`);
     }
 
     const result = await prisma.traveller_tb.delete({
