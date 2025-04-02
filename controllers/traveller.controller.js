@@ -166,7 +166,7 @@ exports.deleteTraveller = async (req, res) => {
     });
     if (traveller.travellerImage) {
       const publicId = traveller.travellerImage.split("/").pop().split(".")[0]; // Extract public_id from URL
-      await Cloudinary.uploader.destroy(`images/travel/${publicId}`);
+      await Cloudinary.uploader.destroy(`images/traveller/${publicId}`);
     }
 
     const result = await prisma.traveller_tb.delete({
