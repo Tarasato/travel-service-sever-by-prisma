@@ -1,14 +1,51 @@
 //File that writes control operations for a table in the database
 //เช่น insert, update, delete, select
 //This file works with traveller_tb\
+const multer = require("multer");
+//ใช้งาน Cloudinary ในการอัพโหลดรูปภาพ
+const { v2: Cloudinary } = require('cloudinary')
+const { CloudinaryStorage } = require('multer-storage-cloudinary')
+// Configurations
+Cloudinary.config({
+  cloud_name: 'dpux0kfvu',
+  api_key: '488942715825326',
+  api_secret: '719UZFKNly19r4Bza2HK50CwyiI' // Click 'View API Keys' above to copy your API secret
+});
 
 //ใช้ Prisma ในการเชื่อมต่อฐานข้อมูล CRUD
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+
+const storage = new CloudinaryStorage({
+  cloudinary: Cloudinary,
+  params: async (req, file) => {
+    const newFile = 'traveller_' + Math.floor(Math.random() * Date.now());
+    return {
+      folder: "images/traveller",
+      allowed_formats: ["jpg", "png", "jpeg"],
+      public_id: newFile,
+    }
+  },
+})
+
+
+//Traveller Image upload function
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, "images/traveller");
+//   },
+//   filename: function (req, file, cb) {
+//     cb(
+//       null,
+//       "traveller_" +
+//         Math.floor(Math.random() * Date.now()) +
+//         path.extname(file.originalname)
+//     );
+//   },
+// });
 
 //register traveller
 exports.createTraveller = async (req, res) => {
@@ -120,46 +157,31 @@ exports.editTraveller = async (req, res) => {
 exports.deleteTraveller = async (req, res) => {
   try {
     const traveller = await prisma.traveller_tb.findFirst({
-          where: {
-            travellerId: Number(req.params.travellerId),
-          },
-        });
-        if (traveller.travellerImage) {
-          const oldImagePath = "images/traveller/" + traveller.travellerImage;
-          //ลบไฟล์เก่าออก
-          fs.unlinkSync(oldImagePath, (err) => {
-            console.log(err);
-          });
-        }
-    
-        const result = await prisma.traveller_tb.delete({
-          where: {
-            travellerId: Number(req.params.travellerId),
-          },
-        });
-        res.status(200).json({
-          message: "Traveller deeleted successfully",
-          data: result,
-        });
+      where: {
+        travellerId: Number(req.params.travellerId),
+      },
+    });
+    if (traveller.travellerImage) {
+      const oldImagePath = "images/traveller/" + traveller.travellerImage;
+      //ลบไฟล์เก่าออก
+      fs.unlinkSync(oldImagePath, (err) => {
+        console.log(err);
+      });
+    }
+
+    const result = await prisma.traveller_tb.delete({
+      where: {
+        travellerId: Number(req.params.travellerId),
+      },
+    });
+    res.status(200).json({
+      message: "Traveller deeleted successfully",
+      data: result,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
-
-//Traveller Image upload function
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "images/traveller");
-  },
-  filename: function (req, file, cb) {
-    cb(
-      null,
-      "traveller_" +
-        Math.floor(Math.random() * Date.now()) +
-        path.extname(file.originalname)
-    );
-  },
-});
 
 exports.uploadTraveller = multer({
   storage: storage,

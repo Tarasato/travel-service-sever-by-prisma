@@ -2,6 +2,16 @@
 //เช่น insert, update, delete, select
 //This file works with travel_tb
 
+//ใช้งาน Cloudinary ในการอัพโหลดรูปภาพ
+const { v2: Cloudinary } = require('cloudinary')
+const { CloudinaryStorage } = require('multer-storage-cloudinary')
+// Configurations
+Cloudinary.config({
+  cloud_name: 'dpux0kfvu',
+  api_key: '488942715825326',
+  api_secret: '719UZFKNly19r4Bza2HK50CwyiI' // Click 'View API Keys' above to copy your API secret
+});
+
 //ใช้ Prisma ในการเชื่อมต่อฐานข้อมูล CRUD
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
@@ -9,6 +19,18 @@ const prisma = new PrismaClient();
 const path = require("path");
 const fs = require("fs");
 const multer = require("multer");
+
+const storage = new CloudinaryStorage({
+  cloudinary: Cloudinary,
+  params: async (req, file) => {
+    const newFile = 'travel_' + Math.floor(Math.random() * Date.now());
+    return {
+      folder: "images/travel",
+      allowed_formats: ["jpg", "png", "jpeg"],
+      public_id: newFile,
+    }
+  },
+})
 
 //fuction insert data to travel_tb
 exports.createTravel = async (req, res) => {
@@ -192,19 +214,19 @@ exports.deleteTravel = async (req, res) => {
 };
 
 //Travel Image upload function
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "images/travel");
-  },
-  filename: function (req, file, cb) {
-    cb(
-      null,
-      "travel_" +
-        Math.floor(Math.random() * Date.now()) +
-        path.extname(file.originalname)
-    );
-  },
-});
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, "images/travel");
+//   },
+//   filename: function (req, file, cb) {
+//     cb(
+//       null,
+//       "travel_" +
+//         Math.floor(Math.random() * Date.now()) +
+//         path.extname(file.originalname)
+//     );
+//   },
+// });
 
 exports.uploadTravel = multer({
   storage: storage,
