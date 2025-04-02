@@ -145,7 +145,7 @@ exports.editTravel = async (req, res) => {
     if (req.file) {
       if (travel.travelImage) {
         const publicId = travel.travelImage.split("/").pop().split(".")[0]; // ดึง public_id ออกจาก URL
-        await cloudinary.uploader.destroy(`images/travel/${publicId}`);
+        await Cloudinary.uploader.destroy(`images/travel/${publicId}`);
       }
       updatedData.travelImage = req.file.path;
     }
