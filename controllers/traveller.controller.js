@@ -102,21 +102,28 @@ exports.checkLoginTraveller = async (req, res) => {
 //func edit profile user in traveller_tb
 exports.editTraveller = async (req, res) => {
   try {
-    //ตรวจสอบว่ามีการอัพโหลดรูปภาพหรือไม่
-    //กรณีที่มี ตรวจสอบก่อนว่ามีไฟล์เก่าไหม ถ้ามีให้ลบไฟล์เก่าออก
+    let result = {};
+    //---------------------------------------------
     if (req.file) {
+      //ค้นดูว่ามีรูปไหม ถ้ามีให้ลบรูปเก่าออก
       const traveller = await prisma.traveller_tb.findFirst({
         where: {
           travellerId: Number(req.params.travellerId),
         },
       });
-      //ถ้ามีไฟล์เก่าให้ลบออก
-      if (traveller.travellerImage) {
-        fs.unlinkSync("images/traveller/" + traveller.travellerImage, (err) => {
-          console.log(err);
-        });
+      //ตตรวจสอบว่ามีรูปไหม
+      if (result.travellerImage) {
+        const publicId = result.travellerImage.split("/").pop().split(".")[0]; // Extract public_id from URL
+        await Cloudinary.uploader.destroy(`images/traveller/${publicId}`);
       }
+      // if (traveller.travellerImage) {
+      //   //ลบรูปเก่าออก
+      //   fs.unlink(traveller.travellerImage, (err) => {
+      //     console.log(err);
+      //   });
+      // }
 
+      //แก้ไขข้อมูล
       result = await prisma.traveller_tb.update({
         where: {
           travellerId: Number(req.params.travellerId),
@@ -125,11 +132,11 @@ exports.editTraveller = async (req, res) => {
           travellerFullname: req.body.travellerFullname,
           travellerEmail: req.body.travellerEmail,
           travellerPassword: req.body.travellerPassword,
-          travellerImage: req.file.path.replace("images\\traveller\\", ""),
+          travellerImage: req.file.path,
         },
       });
     } else {
-      //กรณีไม่มีการอัพโหลดรูป
+      //แก้ไขข้อมูล
       result = await prisma.traveller_tb.update({
         where: {
           travellerId: Number(req.params.travellerId),
@@ -142,14 +149,10 @@ exports.editTraveller = async (req, res) => {
       });
     }
 
-    res.status(200).json({
-      message: "Traveller updated successfully",
-      data: result,
-    });
+    //---------------------------------------------
+    res.status(200).json({ message: "Edit successfully!", data: result });
   } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
+    res.status(500).json({ message: error.message });
   }
 };
 
