@@ -159,15 +159,15 @@ exports.editTraveller = async (req, res) => {
 //ฟังก์ชันลบข้อมูลผู้ใช้งานใน traveller_tb
 exports.deleteTraveller = async (req, res) => {
   try {
-    const traveller = await prisma.traveller_tb.findFirst({
+    let traveller = await prisma.traveller_tb.findFirst({
       where: {
         travellerId: Number(req.params.travellerId),
       },
     });
     if (traveller.travellerImage) {
       //ค้นดูว่ามีรูปไหม ถ้ามีให้ลบรูปเก่าออก
-      const traveller = result.travellerImage.split("/").pop().split(".")[0]; // Extract public_id from URL
-        await Cloudinary.uploader.destroy(`images/traveller/${traveller}`);
+      traveller = result.travellerImage.split("/").pop().split(".")[0]; // Extract public_id from URL
+      await Cloudinary.uploader.destroy(`images/traveller/${traveller}`);
     }
 
     const result = await prisma.traveller_tb.delete({
