@@ -140,8 +140,8 @@ exports.editTravel = async (req, res) => {
         },
       });
       if (travel.travelImage) {
-        const travel = result.travelImage.split("/").pop().split(".")[0]; // Extract public_id from URL
-        await Cloudinary.uploader.destroy(`images/travel/${travel}`);
+        const publicId = travel.travelImage.split("/").pop().split(".")[0]; // Extract public_id from URL
+      await Cloudinary.uploader.destroy(`images/travel/${publicId}`);
       }
 
       //อัพโหลดรูปใหม่
@@ -186,8 +186,8 @@ exports.deleteTravel = async (req, res) => {
       },
     });
     if (travel.travelImage) {
-        const travel = result.travelImage.split("/").pop().split(".")[0]; // Extract public_id from URL
-        await Cloudinary.uploader.destroy(`images/travel/${travel}`);
+      const publicId = travel.travelImage.split("/").pop().split(".")[0]; // Extract public_id from URL
+      await Cloudinary.uploader.destroy(`images/travel/${publicId}`);
     }
 
     const result = await prisma.travel_tb.delete({
