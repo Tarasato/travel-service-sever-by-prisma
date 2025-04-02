@@ -106,15 +106,15 @@ exports.editTraveller = async (req, res) => {
     //---------------------------------------------
     if (req.file) {
       //ค้นดูว่ามีรูปไหม ถ้ามีให้ลบรูปเก่าออก
-      const traveller = await prisma.traveller_tb.findFirst({
+      let result = await prisma.traveller_tb.findFirst({
         where: {
           travellerId: Number(req.params.travellerId),
         },
       });
       //ตตรวจสอบว่ามีรูปไหม
       if (result.travellerImage) {
-        const publicId = result.travellerImage.split("/").pop().split(".")[0]; // Extract public_id from URL
-        await Cloudinary.uploader.destroy(`images/traveller/${publicId}`);
+        const traveller = result.travellerImage.split("/").pop().split(".")[0]; // Extract public_id from URL
+        await Cloudinary.uploader.destroy(`images/traveller/${traveller}`);
       }
       // if (traveller.travellerImage) {
       //   //ลบรูปเก่าออก
