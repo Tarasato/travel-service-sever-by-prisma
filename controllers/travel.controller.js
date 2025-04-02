@@ -125,55 +125,42 @@ exports.getTravel = async (req, res) => {
 //func edit travel in travel_tb
 exports.editTravel = async (req, res) => {
   try {
-    //ตรวจสอบว่ามีการอัพโหลดรูปภาพหรือไม่
-    //กรณีที่มี ตรวจสอบก่อนว่ามีไฟล์เก่าไหม ถ้ามีให้ลบไฟล์เก่าออก
-    let data = {
-      ...req.body,
+    const travel = await prisma.travel_tb.findFirst({
+      where: { travelId: Number(req.params.travelId) },
+    });
+
+    if (!travel) {
+      return res.status(404).json({ message: "ไม่พบข้อมูลที่ต้องการแก้ไข" });
+    }
+
+    let updatedData = {
+      travellerId: Number(req.body.travellerId),
+      travelPlace: req.body.travelPlace,
+      travelStartDate: req.body.travelStartDate,
+      travelEndDate: req.body.travelEndDate,
+      travelCostTotal: parseFloat(req.body.travelCostTotal),
     };
 
+    // ถ้ามีรูปใหม่ ให้ลบรูปเก่าออกจาก Cloudinary
     if (req.file) {
-      //ตรวจสอบว่ามีการอัพโหลดรูปภาพมาเพื่อแก้ไขหรือไม่
-      const travel = await prisma.travel_tb.findFirst({
-        //ค้นหารูปเก่า
-        where: {
-          travelId: Number(req.params.travelId),
-        },
-      });
       if (travel.travelImage) {
-        const publicId = travel.travelImage.split("/").pop().split(".")[0]; // Extract public_id from URL
-      await Cloudinary.uploader.destroy(`images/travel/${publicId}`);
+        const publicId = travel.travelImage.split("/").pop().split(".")[0]; // ดึง public_id ออกจาก URL
+        await cloudinary.uploader.destroy(`images/travel/${publicId}`);
       }
-
-      //อัพโหลดรูปใหม่
-      data.travelImage = req.file.path.replace("images\\travel\\", "");
-    } else {
-      //กรณีไม่มีการอัพโหลดรูป
-      delete data.travelImage;
+      updatedData.travelImage = req.file.path;
     }
 
     const result = await prisma.travel_tb.update({
-      where: {
-        travelId: Number(req.params.travelId),
-      },
-      data: {
-        travellerId: Number(req.body.travellerId),
-        travelPlace: req.body.travelPlace,
-        travelStartDate: req.body.travelStartDate,
-        travelEndDate: req.body.travelEndDate,
-        travelCostTotal: parseFloat(req.body.travelCostTotal),
-        travelImage: req.file
-          ? req.file.path.replace("images\\travel\\", "")
-          : "",
-      }
+      where: { travelId: Number(req.params.travelId) },
+      data: updatedData,
     });
+
     res.status(200).json({
-      message: "Travel updated successfully",
+      message: "อัปเดตข้อมูลสำเร็จ",
       data: result,
     });
   } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
+    res.status(500).json({ message: "เกิดข้อผิดพลาด: " + error.message });
   }
 };
 
