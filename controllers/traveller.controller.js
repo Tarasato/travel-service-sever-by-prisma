@@ -164,8 +164,8 @@ exports.deleteTraveller = async (req, res) => {
         travellerId: Number(req.params.travellerId),
       },
     });
-    if (traveller.travelImage) {
-      const publicId = traveller.travelImage.split("/").pop().split(".")[0]; // Extract public_id from URL
+    if (traveller.travellerImage) {
+      const publicId = traveller.travellerImage.split("/").pop().split(".")[0]; // Extract public_id from URL
       await Cloudinary.uploader.destroy(`images/travel/${publicId}`);
     }
 
