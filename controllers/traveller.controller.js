@@ -175,7 +175,7 @@ exports.deleteTraveller = async (req, res) => {
       },
     });
     res.status(200).json({
-      message: "Traveller deeleted successfully",
+      message: "Traveller deleted successfully",
       data: result,
     });
   } catch (error) {
